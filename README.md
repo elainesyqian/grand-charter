@@ -22,8 +22,11 @@ grand-charter/
 ├── frontend/   React + TypeScript (Vite), React Router, TanStack Query
 └── backend/    FastAPI, SQLAlchemy, Pydantic, SQLite
     ├── app/
-    │   ├── main.py          app + router wiring
+    │   ├── main.py          app + router wiring, error → HTTP status mapping
+    │   ├── config.py        settings from env (.env.example)
     │   ├── db.py            engine/session; DATABASE_URL env var
+    │   ├── enums.py         roles, regions, categories, statuses, allowed transitions
+    │   ├── deps.py          current user, role guards, pagination params
     │   ├── models.py        SQLAlchemy tables
     │   ├── schemas/         Pydantic request/response models, per role
     │   ├── routers/         auth, plaintiff, firm, admin, documents
@@ -74,9 +77,10 @@ Lead          id, plaintiff_id, name, email, region, category, description,
               status, firm_id?, created_at, updated_at
 LeadDecline   lead_id, firm_id, user_id, reason, created_at   (firms that declined)
 Case          id, lead_id (UNIQUE), firm_id, status, created_at, updated_at
-CaseUpdate    case_id, author_id, status?, message, created_at  (visible to plaintiff)
+CaseUpdate    case_id, author_id, from_status?, to_status?, message?, created_at  (visible to plaintiff)
 Note          case_id, author_firm_id, author_user_id, body, created_at  (firm-private)
-Document      id, lead_id, uploaded_by, uploader_role, filename, storage_key, size, created_at
+Document      id, lead_id, uploaded_by, uploader_role, uploader_firm_id?, filename,
+              storage_key, size, created_at
 AuditEvent    id, actor_id, entity_type, entity_id, action, before (JSON), after (JSON),
               reason?, created_at                               (append-only)
 ```
@@ -145,6 +149,7 @@ All endpoints are under `/api`. Lists take `page` and `page_size` and return `{ 
 | POST | `/auth/login` | `{email, password}` → sets session cookie |
 | POST | `/auth/logout` | clear session |
 | GET | `/auth/me` | current user (role, firm) |
+| GET | `/auth/demo-users` | seeded demo users for the login picker (no passwords) |
 | GET | `/meta` | regions, categories, case statuses (for forms) |
 
 ### Plaintiff (`role = plaintiff`)
@@ -242,3 +247,28 @@ SQLite needs zero setup, and WAL mode lets reads continue during writes. Its rea
 - **A firm loses access to its own notes after a case is reassigned away.** Admins can still read them. No archive UI is provided, per the spec.
 - **Routing runs once, at submission.** Later changes to the routing rules don't re-route existing leads.
 - **The routing table is seeded**, with no editor UI, per the spec.
+- **Plaintiffs don't see internal routing.** `unassigned`, `assigned` and `declined` all show to the plaintiff as "under review". The firm name appears once a firm accepts.
+- **Closed cases are read-only.** No new updates or uploads, and they can't be reassigned.
+- **Tables are created at startup** (`create_all`). Migrations (Alembic) would be the next step for a long-lived deployment.
+
+## Edge cases
+
+| Situation | Behaviour |
+|---|---|
+| Two staff members accept the same lead at once | State changes are compare-and-set (`UPDATE … WHERE status='assigned' AND firm_id=:mine`). The loser gets 409, and `UNIQUE(case.lead_id)` is the backstop. |
+| A firm accepts while an admin reassigns the lead | Same compare-and-set: whichever lands second gets 409. |
+| Firm accepts or declines a lead that was already declined or reassigned | 404, because the firm no longer has access. |
+| Admin uses "assign" on an accepted lead | 409. Once a case exists, it moves through case reassignment, so `lead.firm_id` and `case.firm_id` always stay in sync. |
+| Admin assigns to the firm that already holds it | 409 (no-op). |
+| Admin assigns back to a firm that declined | Allowed. The UI shows that firm's earlier decline and its reason before confirming. |
+| Case goes A → B → A | Firm A regains access, including its own earlier notes (it wrote them). Firm B's notes stay hidden from A. |
+| Plaintiff submits with a different email than their account | The lead stores the contact details as entered. Ownership always comes from the session (`plaintiff_id`), never from email. |
+| Plaintiff uploads before any firm accepts | Allowed. The document is attached to the lead and visible to whichever firm is assigned. |
+| File named `.pdf` but isn't a PDF, empty, or too large | Rejected (`%PDF-` signature check, size limit enforced while streaming). |
+| Malicious filename (`../../etc/passwd`) | The filename is display-only. Files are stored under a random UUID, and downloads send a sanitized `Content-Disposition`. |
+| Database insert fails after a file is saved | The stored file is deleted, so no orphan is left. |
+| Plaintiff or staff calls another role's routes | 403 (role guard on the router). A record that exists but isn't theirs → 404. |
+| Search term contains `%` or `_` | Escaped before `LIKE`. A numeric query also matches by id. |
+| Very large `page_size` | Capped at 100. Ordering is `created_at DESC, id DESC` so pages are stable. |
+| Routing has no match for (category, region) | The lead is `unassigned`, appears in the admin queue, and the audit log records `lead.unmatched` (actor = system). |
+| Progress update with neither a status nor a message | 422. Same-status "changes" are stored as message-only updates. |
