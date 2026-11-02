@@ -10,7 +10,7 @@ from app import policy
 from app.db import get_db
 from app.deps import PageParams, page_params, require_role
 from app.enums import AuditAction, CaseStatus, Category, EntityType, LeadStatus, Region, Role
-from app.models import AuditEvent, Case, Firm, Lead, Note, User
+from app.models import AuditEvent, Case, Firm, Lead, LeadDecline, Note, User
 from app.querying import documents_stmt, history_stmt, page_body, paginate, text_search, updates_stmt
 from app.schemas import admin as s
 from app.schemas.common import AuditEventOut, CaseUpdateOut, DocumentOut, FirmRef, Page, UserRef
@@ -36,7 +36,11 @@ def search_leads(
     params: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
 ):
-    stmt = select(Lead).options(selectinload(Lead.firm))
+    stmt = select(Lead).options(
+        selectinload(Lead.firm),
+        selectinload(Lead.declines).selectinload(LeadDecline.firm),
+        selectinload(Lead.declines).selectinload(LeadDecline.user),
+    )
     if status_:
         stmt = stmt.where(Lead.status.in_(status_))
     if firm_id is not None:

@@ -1,0 +1,46 @@
+:root {
+  --gc-page-bg: #f8f7f4;
+  --gc-border: #e2dfd8;
+  --gc-muted: #655f55;
+  --gc-private-bg: #fbf8ef;
+  --gc-private-border: #e6dcbc;
+}
+
+html,
+body {
+  background: var(--gc-page-bg);
+  color: #1b1916;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Clickable table rows */
+.gc-row-link {
+  cursor: pointer;
+}
+.gc-row-link:focus-visible {
+  outline: 2px solid var(--mantine-color-navy-5);
+  outline-offset: -2px;
+}
+
+.gc-nav-link {
+  padding: 6px 12px;
+  border-radius: var(--mantine-radius-md);
+  color: var(--mantine-color-stone-7);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+}
+.gc-nav-link:hover {
+  background: var(--mantine-color-stone-0);
+  color: var(--mantine-color-navy-8);
+}
+.gc-nav-link.active {
+  background: var(--mantine-color-navy-0);
+  color: var(--mantine-color-navy-8);
+}
+
+/* Preserve line breaks in user-written text (descriptions, notes, updates). */
+.gc-prose {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

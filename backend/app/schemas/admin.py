@@ -10,6 +10,14 @@ from app.schemas.common import FirmRef, Schema, UserRef
 from app.schemas.firm import NoteOut
 
 
+class DeclineOut(Schema):
+    id: int
+    firm: FirmRef
+    user: UserRef
+    reason: str
+    created_at: datetime
+
+
 class AdminLeadOut(Schema):
     id: int
     name: str
@@ -18,16 +26,10 @@ class AdminLeadOut(Schema):
     region: Region
     status: LeadStatus
     firm: FirmRef | None
+    # Shown in the admin queue so declined leads can be triaged without opening each one.
+    latest_decline: DeclineOut | None
     created_at: datetime
     updated_at: datetime
-
-
-class DeclineOut(Schema):
-    id: int
-    firm: FirmRef
-    user: UserRef
-    reason: str
-    created_at: datetime
 
 
 class AdminLeadDetail(AdminLeadOut):

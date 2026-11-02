@@ -106,3 +106,12 @@ def test_admin_can_assign_back_to_firm_that_declined(db):
     )
     assert res.status_code == 200
     assert len(res.json()["declines"]) == 1  # earlier decline stays visible
+
+
+def test_admin_search_includes_latest_decline(db):
+    items = login("admin@demo").get("/api/admin/leads", params={"status": "declined"}).json()["items"]
+    declined = next(i for i in items if i["id"] == lead_by_description(db, "custody").id)
+    assert declined["latest_decline"]["firm"]["name"].startswith("Brightwater")
+    assert declined["latest_decline"]["reason"].startswith("At capacity")
+    pending = login("admin@demo").get("/api/admin/leads", params={"status": "assigned"}).json()["items"]
+    assert all(i["latest_decline"] is None for i in pending)
