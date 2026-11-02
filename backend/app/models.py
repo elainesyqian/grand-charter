@@ -93,6 +93,10 @@ class Lead(Base):
         order_by="LeadDecline.created_at", back_populates="lead"
     )
 
+    @property
+    def latest_decline(self) -> "LeadDecline | None":
+        return self.declines[-1] if self.declines else None
+
 
 class LeadDecline(Base):
     __tablename__ = "lead_declines"

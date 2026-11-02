@@ -38,7 +38,29 @@ scripts/check.sh --fix    # auto-fix lint issues and reformat first
 
 ### Frontend
 
-> Setup instructions will be added once the frontend exists.
+Requires Node 22.12+ (developed on Node 24). Start the backend first, then in a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev               # http://localhost:5173
+```
+
+Open http://localhost:5173 and sign in with any demo account (password `demo123`). Start typing in the email field to get suggestions; the arrow keys and Enter pick one. The dev server proxies `/api` to the backend on port 8000 (set `API_URL` to point elsewhere), so the session cookie works without CORS.
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server with hot reload |
+| `npm run build` | Typecheck, then production build into `dist/` |
+| `npm test` | Vitest + Testing Library |
+| `npm run lint` / `npm run format` | ESLint (zero warnings allowed) / Prettier |
+
+**A quick demo path** (about 3 minutes):
+1. Sign in as `plaintiff1@demo` (Jordan Rivera, client). Submit a new *Employment* request in the *West*, then upload a PDF.
+2. **Sign out**, then sign in as `attorney.a@demo` (Alex Alder, Alder & Finch). The request is in the inbox. Accept it, post an update, and add a private note.
+3. Sign in as `admin@demo`. Open the case and **Reassign case** to Brightwater Legal. Look at the *History* and *Private notes* tabs.
+4. Sign in as `attorney.b@demo` (Blair Brooks, Brightwater). The case and documents are there, but not Alder's note. Alex Alder now gets "couldn't find that".
+5. Back as Jordan: progress and documents are visible; private notes never are.
 
 ### CI
 
@@ -49,7 +71,7 @@ scripts/check.sh --fix    # auto-fix lint issues and reformat first
 | Backend · lint & format | `ruff check` (pycodestyle, pyflakes, import order, bugbear, pyupgrade, simplify) and `ruff format --check`. Config is in `backend/pyproject.toml`. |
 | Backend · tests | The full `pytest` suite. |
 | Backend · build & smoke test | Installs **runtime dependencies only**, seeds a throwaway database, boots the real server with uvicorn, and makes HTTP calls as each role (`scripts/smoke_test.sh`). This catches startup failures, missing runtime dependencies and broken seed data that unit tests can miss. |
-| Frontend · lint, typecheck, test, build | `npm ci`, then `lint`, `format:check`, `typecheck` and `test` (each only if the script exists in `package.json`), then `npm run build`. Skips with a notice until `frontend/package.json` exists. |
+| Frontend · lint, typecheck, test, build | `npm ci`, then `lint` (ESLint, zero warnings), `format:check` (Prettier), `typecheck` (`tsc`), `test` (Vitest), then `npm run build`. |
 
 Dependencies are pinned (`requirements.txt` for runtime, `requirements-dev.txt` adds pytest, httpx and ruff), and pip/npm downloads are cached between runs.
 
@@ -64,7 +86,15 @@ One application in one repo: a React single-page app talking to a Python API.
 ```
 grand-charter/
 ├── .github/workflows/ci.yml   PR checks (see CI)
-├── frontend/   React + TypeScript (Vite), React Router, TanStack Query
+├── frontend/   React + TypeScript (Vite), Mantine UI, React Router, TanStack Query
+│   └── src/
+│       ├── api/         typed fetch client + one module per role (mirrors the backend routers)
+│       ├── auth/        current user (from /auth/me), role route guard
+│       ├── components/  layout, tables, filters, timelines, notes, documents, assign dialog
+│       ├── pages/       login + plaintiff/, firm/, admin/ (each page lazy-loaded)
+│       ├── lib/         query client, formatting, URL-synced filters
+│       ├── theme/       Mantine theme (navy + army green, serif headings) and global CSS
+│       └── test/        Vitest + Testing Library
 └── backend/    FastAPI, SQLAlchemy, Pydantic, SQLite
     ├── app/
     │   ├── main.py          app + router wiring, error → HTTP status mapping
@@ -117,7 +147,7 @@ Account creation is out of scope. The app seeds demo users with hardcoded passwo
 | `attorney.b@demo` | staff | Firm B |
 | `attorney.c@demo` | staff | Firm C |
 
-Every demo user's password is `demo123`. The login page lists them for one-click sign-in. Sessions use a signed, httpOnly cookie (`SameSite=Lax`, 8-hour lifetime) that holds only the user id. Every API request loads the user from the database using that id, never from anything else the client sends. Passwords are bcrypt-hashed, and an unknown email takes the same time to reject as a wrong password.
+Every demo user's password is `demo123`. The login page is a plain email and password form; the email field suggests matching demo accounts as you type. Sessions use a signed, httpOnly cookie (`SameSite=Lax`, 8-hour lifetime) that holds only the user id. Every API request loads the user from the database using that id, never from anything else the client sends. Passwords are bcrypt-hashed, and an unknown email takes the same time to reject as a wrong password.
 
 Firms are Alder & Finch LLP (A), Brightwater Legal (B) and Cedar Law Group (C). The seed data puts at least one lead or case into every state, including a case that was reassigned from A to B with notes from both firms, a declined lead, an unmatched lead, and a closed case.
 
@@ -211,7 +241,7 @@ All endpoints are under `/api`. The full, live schema is at `/docs` when the bac
 | POST | `/auth/login` | `{email, password}` → sets session cookie |
 | POST | `/auth/logout` | clear session |
 | GET | `/auth/me` | current user (role, firm) |
-| GET | `/auth/demo-users` | seeded demo users for the login picker (no passwords) |
+| GET | `/auth/demo-users` | seeded demo accounts for the login page's email suggestions (no passwords) |
 | GET | `/meta` | regions, categories, lead and case statuses (public; the submit form needs it) |
 | GET | `/health` | liveness check |
 
@@ -241,7 +271,7 @@ All endpoints are under `/api`. The full, live schema is at `/docs` when the bac
 ### Admin (`role = admin`)
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/admin/leads` | search across firms; filters: `q`, `status`, `firm_id`, `category`, `region`, `created_from`, `created_to`. The queue is `?status=unassigned&status=declined` |
+| GET | `/admin/leads` | search across firms; filters: `q`, `status`, `firm_id`, `category`, `region`, `created_from`, `created_to`. The queue is `?status=unassigned&status=declined`. Each row includes `latest_decline` (firm, person, reason) |
 | GET | `/admin/leads/{id}` | lead + plaintiff + `declines` (which firm, who, why) + `case_id` |
 | GET | `/admin/leads/{id}/documents` | documents |
 | GET | `/admin/leads/{id}/history` | audit events for the lead **and** its case, as one timeline |
@@ -269,7 +299,7 @@ The routers are split **by role**, not by resource. Each role gets its own respo
 
 | Route | Role | Screen |
 |---|---|---|
-| `/login` | – | demo-user picker |
+| `/login` | – | email + password sign-in (email suggestions) |
 | `/plaintiff` | plaintiff | my leads and cases |
 | `/plaintiff/new` | plaintiff | submit a lead (name and email pre-filled) |
 | `/plaintiff/leads/:id` | plaintiff | status, progress timeline, documents (upload/view) |
@@ -283,6 +313,20 @@ The routers are split **by role**, not by resource. Each role gets its own respo
 | `/admin/audit` | admin | global audit log |
 
 A route guard sends users to their role's home page. That's only for usability; the API enforces access.
+
+### Frontend design
+
+- **Look:** light mode only. No product name: the logo is just a scales-of-justice mark. Source Serif 4 for headings, Inter for everything else. Text is near-black and warm grays on an off-white page. Navy is the primary accent (buttons, links, in-progress states); army green marks positive states (accepted, open, success toasts). Fonts are self-hosted through `@fontsource`, so there are no external requests.
+- **Client-visible vs private is shown visually, not just in text.** On the firm's case page, the update composer carries a green "Visible to client" badge. Private notes sit in a separate warm-yellow panel with a lock icon and "Only <firm> staff can see these".
+- **Every hard-to-undo action asks first:** accept, decline (reason required, with quick-pick reasons), assign, reassign, and closing a case. The reassign dialog explains exactly who loses access and what moves. The assign dialog warns if the chosen firm declined the lead before.
+- **Data handling:** TanStack Query caches per role-scoped key and refetches after every change.
+  - A 409 ("changed by someone else") shows a toast and refreshes the page's data.
+  - A 401 sends you to the login page.
+  - A 404 shows "couldn't find that". That's also what a firm sees after a case moves away from it.
+- **Filters and page numbers live in the URL,** so refresh, back and shared links keep your view. Search is debounced.
+- **Pages are lazy-loaded per route,** so a client never downloads admin screens. A thin progress bar shows while a page's code loads.
+- **Responsive:** on phones the nav moves into a burger menu, two-column pages stack, and wide tables scroll sideways.
+- **Accessibility:** table rows are keyboard-focusable (Enter opens them), every icon-only control has a label, and relative times show the exact timestamp on hover.
 
 ---
 
@@ -344,6 +388,7 @@ SQLite needs zero setup, and WAL mode lets reads continue during writes. Its rea
 - **Postgres constraint-name collision.** Naming the enum `CHECK` constraints after the enum type would have given `case_updates.from_status` and `case_updates.to_status` the same constraint name. SQLite allows that; Postgres rejects it. The constraints are now unnamed, so each one gets a generated name.
 - **SQLite drops timezones.** Timestamps came back without a timezone and would have been serialized without a `Z`. A small `UTCDateTime` column type now re-attaches UTC on load.
 - **`passlib` is unmaintained and breaks with current `bcrypt`.** The code uses `bcrypt` directly.
+- **The admin queue needed to show who declined each lead and why,** without loading every lead's detail. Admin lead search results now include `latest_decline`, loaded with the list query so it doesn't add a query per row.
 - **Large sub-lists in detail responses.** The original design put every update, note, document and history entry inside the detail response. With hundreds per case that's unbounded, so each sub-list now has its own paginated endpoint.
 
 ## Edge cases
