@@ -1,0 +1,25 @@
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, import order, bugbear, pyupgrade, simplify
+select = ["E", "W", "F", "I", "B", "UP", "SIM"]
+ignore = [
+    "B008",  # FastAPI's Depends()/Query()/File() in argument defaults is the intended pattern
+    "B904",  # raising domain errors inside `except` is deliberate in services
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+# conftest sets env vars before importing the app, so imports can't be at the top.
+"tests/conftest.py" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    # Starlette's TestClient warns about its httpx dependency; not ours to fix.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
