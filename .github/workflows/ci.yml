@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A new push to the same PR cancels the run that's still going.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-lint:
+    name: Backend · lint & format
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Ruff lint
+        run: ruff check --output-format=github .
+      - name: Ruff format check
+        run: ruff format --check --diff .
+
+  backend-test:
+    name: Backend · tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Pytest
+        run: python -m pytest -q
+
+  backend-build:
+    name: Backend · build & smoke test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      # Runtime dependencies only: proves the app runs without dev/test packages.
+      - run: pip install -r requirements.txt
+      - name: Seed, boot server, exercise the API
+        run: scripts/smoke_test.sh
+
+  frontend:
+    name: Frontend · lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      # The frontend isn't scaffolded yet; skip cleanly until package.json exists.
+      - name: Detect frontend project
+        id: detect
+        run: |
+          if [ -f package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"
+          else echo "present=false" >> "$GITHUB_OUTPUT"; echo "::notice::frontend/package.json not found; skipping frontend checks"; fi
+      - uses: actions/setup-node@v4
+        if: steps.detect.outputs.present == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - if: steps.detect.outputs.present == 'true'
+        run: npm ci
+      - name: Lint
+        if: steps.detect.outputs.present == 'true'
+        run: npm run lint --if-present
+      - name: Format check
+        if: steps.detect.outputs.present == 'true'
+        run: npm run format:check --if-present
+      - name: Typecheck
+        if: steps.detect.outputs.present == 'true'
+        run: npm run typecheck --if-present
+      - name: Test
+        if: steps.detect.outputs.present == 'true'
+        run: npm test --if-present
+      - name: Build
+        if: steps.detect.outputs.present == 'true'
+        run: npm run build

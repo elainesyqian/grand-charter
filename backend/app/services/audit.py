@@ -1,8 +1,36 @@
 """Audit log writer.
 
-record(db, actor, entity_type, entity_id, action, before, after, reason=None)
-- Adds an AuditEvent to the CURRENT session; never commits on its own, so the event is
-  committed or rolled back together with the change it describes.
-- actor=None means "system" (e.g. automatic routing).
-- before/after hold only the changed fields, e.g. {"firm_id": 1, "status": "assigned"}.
+Events are added to the caller's session and never committed here, so each event is
+committed or rolled back together with the change it describes.
 """
+
+from typing import Any
+
+from sqlalchemy.orm import Session
+
+from app.enums import AuditAction, EntityType
+from app.models import AuditEvent, User
+
+
+def record(
+    db: Session,
+    actor: User | None,
+    entity_type: EntityType,
+    entity_id: int,
+    action: AuditAction,
+    before: dict[str, Any] | None = None,
+    after: dict[str, Any] | None = None,
+    reason: str | None = None,
+) -> AuditEvent:
+    """actor=None means the system (e.g. automatic routing)."""
+    event = AuditEvent(
+        actor_id=actor.id if actor else None,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        action=action,
+        before=before,
+        after=after,
+        reason=reason,
+    )
+    db.add(event)
+    return event
