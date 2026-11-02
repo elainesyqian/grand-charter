@@ -1,0 +1,8 @@
+# Planned dependencies (pin versions when implementing):
+# fastapi, uvicorn[standard]   - API server
+# sqlalchemy                   - ORM / query builder
+# pydantic, pydantic-settings  - schemas and config from env
+# itsdangerous                 - signed session cookie (Starlette SessionMiddleware)
+# passlib[bcrypt]              - password hashing for seeded demo users
+# python-multipart             - file uploads
+# pytest, httpx                - tests (FastAPI TestClient)
