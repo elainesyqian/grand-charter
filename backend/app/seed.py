@@ -27,17 +27,17 @@ from app.services import cases, documents, leads
 
 DEMO_PASSWORD = "demo123"
 
-FIRMS = {"A": "Alder & Finch LLP", "B": "Brightwater Legal", "C": "Cedar Law Group"}
+FIRMS = {"A": "Alley & Deering LLP", "B": "Hayes & Teale LLP", "C": "Chetham & Tyne LLP"}
 
 # (email, name, role, title, firm key)
 USERS = [
-    ("admin@demo", "Avery Admin", Role.admin, None, None),
-    ("plaintiff1@demo", "Jordan Rivera", Role.plaintiff, None, None),
-    ("plaintiff2@demo", "Sam Chen", Role.plaintiff, None, None),
-    ("attorney.a@demo", "Alex Alder", Role.staff, "Attorney", "A"),
+    ("admin@demo", "Mr. Goose", Role.admin, None, None),
+    ("plaintiff1@demo", "Liam Lester", Role.plaintiff, None, None),
+    ("plaintiff2@demo", "Finn Phillip", Role.plaintiff, None, None),
+    ("attorney.a@demo", "Ana Deering", Role.staff, "Attorney", "A"),
     ("paralegal.a@demo", "Pat Park", Role.staff, "Paralegal", "A"),
-    ("attorney.b@demo", "Blair Brooks", Role.staff, "Attorney", "B"),
-    ("attorney.c@demo", "Casey Cedar", Role.staff, "Attorney", "C"),
+    ("attorney.b@demo", "Becky Teale", Role.staff, "Attorney", "B"),
+    ("attorney.c@demo", "Conrad Chetham", Role.staff, "Attorney", "C"),
 ]
 
 # Firm A: injury + employment (not southwest). Firm B: family + immigration everywhere, and
@@ -146,8 +146,8 @@ def seed_demo(db: Session) -> None:
     cases.add_note(db, para_a, c1.id, "Records request sent to St. Mary's on the 12th.")
     upload(para_a, l1, "records-request.pdf")
     cases.admin_reassign(db, admin, c1.id, firms["B"].id, "Firm A has a conflict of interest.")
-    cases.add_note(db, att_b, c1.id, "Picked up from Alder & Finch. Reviewing file.")
-    cases.add_update(db, att_b, c1.id, None, "Brightwater Legal has taken over your case.")
+    cases.add_note(db, att_b, c1.id, "Picked up from Alley & Deering. Reviewing file.")
+    cases.add_update(db, att_b, c1.id, None, "Hayes & Teale LLP has taken over your case.")
 
     # 2. Waiting in Firm A's inbox.
     submit(p1, Category.employment, Region.midwest, "Let go two weeks after reporting a safety issue to HR.")

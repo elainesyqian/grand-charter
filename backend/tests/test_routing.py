@@ -10,7 +10,7 @@ def submit(client, category, region):
     return client.post(
         "/api/plaintiff/leads",
         json={
-            "name": "Jordan Rivera",
+            "name": "Liam Lester",
             "email": "jordan@example.com",
             "region": region,
             "category": category,
@@ -38,7 +38,7 @@ def test_matched_lead_is_assigned_to_mapped_firm(db):
 
     admin = login("admin@demo").get(f"/api/admin/leads/{body['id']}").json()
     assert admin["status"] == "assigned"
-    assert admin["firm"]["id"] == firm_id(db, "Alder")
+    assert admin["firm"]["id"] == firm_id(db, "Alley")
     assert history(db, body["id"]) == ["lead.created", "lead.routed"]
 
 

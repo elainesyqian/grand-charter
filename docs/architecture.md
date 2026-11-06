@@ -72,7 +72,7 @@ Account creation is out of scope. The app seeds demo users with hardcoded passwo
 
 Every demo user's password is `demo123`. The login page is a plain email and password form; the email field suggests matching demo accounts as you type. Sessions use a signed, httpOnly cookie (`SameSite=Lax`, 8-hour lifetime) that holds only the user id. Every API request loads the user from the database using that id, never from anything else the client sends. Passwords are bcrypt-hashed, and an unknown email takes the same time to reject as a wrong password.
 
-Firms are Alder & Finch LLP (A), Brightwater Legal (B) and Cedar Law Group (C). The seed data puts at least one lead or case into every state, including a case that was reassigned from A to B with notes from both firms, a declined lead, an unmatched lead, and a closed case.
+Firms are Alley & Deering LLP (A), Hayes & Teale LLP (B) and Chetham & Tyne LLP (C). The seed data puts at least one lead or case into every state, including a case that was reassigned from A to B with notes from both firms, a declined lead, an unmatched lead, and a closed case.
 
 ## Data model
 

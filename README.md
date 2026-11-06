@@ -58,11 +58,11 @@ Open http://localhost:5173 and sign in with any demo account (password `demo123`
 > **Pro tip:** to stay signed in as several people at once, open each one at its own URL in Chrome, such as http://localhost:5173, http://firm.localhost:5173 and http://admin.localhost:5173. It's the same app, but Chrome keeps a separate session cookie for each hostname, so signing in on one doesn't sign you out of the others. Any `*.localhost` name works with no setup.
 
 **Example workflow** (about 3 minutes):
-1. Sign in as `plaintiff1@demo` (Jordan Rivera, client). Submit a new *Employment* request in the *West*, then upload a PDF.
-2. **Sign out**, then sign in as `attorney.a@demo` (Alex Alder, Alder & Finch). The request is in the inbox. Accept it, post an update, and add a private note.
-3. Sign in as `admin@demo`. Open the case and **Reassign case** to Brightwater Legal. Look at the *History* and *Private notes* tabs.
-4. Sign in as `attorney.b@demo` (Blair Brooks, Brightwater). The case and documents are there, but not Alder's note. Alex Alder now gets "couldn't find that".
-5. Back as Jordan: progress and documents are visible; private notes never are.
+1. Sign in as `plaintiff1@demo` (Liam Lester, client). Submit a new *Employment* request in the *West*, then upload a PDF.
+2. **Sign out**, then sign in as `attorney.a@demo` (Ana Deering, Alley & Deering). The request is in the inbox. Accept it, post an update, and add a private note.
+3. Sign in as `admin@demo`. Open the case and **Reassign case** to Hayes & Teale LLP. Look at the *History* and *Private notes* tabs.
+4. Sign in as `attorney.b@demo` (Becky Teale, Hayes & Teale). The case and documents are there, but not Alley & Deering's note. Ana Deering now gets "couldn't find that".
+5. Back as Liam: progress and documents are visible; private notes never are.
 
 ## Documentation
 
@@ -107,3 +107,5 @@ SQLite (SQLAlchemy)     storage/ (PDFs on local disk)
 | Frontend · lint, typecheck, test, build | `npm ci`, then `lint` (ESLint, zero warnings), `format:check` (Prettier), `typecheck` (`tsc`), `test` (Vitest), then `npm run build`. |
 
 Dependencies are pinned (`requirements.txt` for runtime, `requirements-dev.txt` adds pytest, httpx and ruff), and pip/npm downloads are cached between runs.
+
+<sub><a href="docs/easter-eggs.md">did u catch the easter eggs?</a></sub>

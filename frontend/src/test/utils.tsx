@@ -37,7 +37,7 @@ export function renderWithProviders(ui: ReactElement, { route = '/' }: { route?:
 
 export const plaintiffUser = {
   id: 2,
-  name: 'Jordan Rivera',
+  name: 'Liam Lester',
   email: 'plaintiff1@demo',
   role: 'plaintiff',
   title: null,

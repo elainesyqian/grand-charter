@@ -8,8 +8,8 @@ import { mockApi, renderWithProviders } from './utils';
 
 describe('lead form validation', () => {
   const valid = {
-    name: 'Jordan',
-    email: 'j@example.com',
+    name: 'Liam',
+    email: 'l@example.com',
     region: 'west' as const,
     category: 'family' as const,
     description: 'Something happened',

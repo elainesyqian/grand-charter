@@ -18,13 +18,13 @@ const event = (overrides: Partial<AuditEventOut>): AuditEventOut => ({
 
 describe('audit event descriptions', () => {
   const names = new Map([
-    [1, 'Alder & Finch LLP'],
-    [2, 'Brightwater Legal'],
+    [1, 'Alley & Deering LLP'],
+    [2, 'Hayes & Teale LLP'],
   ]);
 
   it('names both firms on a reassignment', () => {
     const d = describeEvent(event({ before: { firm_id: 1 }, after: { firm_id: 2 } }), names);
-    expect(d.text).toBe('Case moved from Alder & Finch LLP to Brightwater Legal');
+    expect(d.text).toBe('Case moved from Alley & Deering LLP to Hayes & Teale LLP');
   });
 
   it('uses readable status labels', () => {
