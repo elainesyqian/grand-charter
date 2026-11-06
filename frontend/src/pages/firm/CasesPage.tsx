@@ -22,7 +22,7 @@ const columns: Column<FirmCaseSummary>[] = [
   { key: 'id', header: 'Case', render: (c) => `#${c.id}`, width: 90 },
   {
     key: 'client',
-    header: 'Client',
+    header: 'Plaintiff',
     render: (c) => (
       <Text size="sm" fw={600}>
         {c.plaintiff_name}
@@ -92,7 +92,7 @@ export function CasesPage() {
         <SearchInput
           value={values.q}
           onChange={(q) => set({ q })}
-          placeholder="Search by client, email, details or case #"
+          placeholder="Search by plaintiff, email, details or case #"
         />
         <FilterSelect
           label="Category"
@@ -118,7 +118,7 @@ export function CasesPage() {
         empty={
           filtersActive
             ? emptyTable('No cases match these filters')
-            : emptyTable('No cases here yet', 'Accept a request from your inbox to open a case.')
+            : emptyTable('No cases here yet', 'Accept a lead from your inbox to open a case.')
         }
       />
     </>

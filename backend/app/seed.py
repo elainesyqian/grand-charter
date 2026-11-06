@@ -234,6 +234,7 @@ def seed_bulk(db: Session, n: int, n_firms: int = 100, batch: int = 5000) -> Non
         ids = db.scalars(insert(Lead).returning(Lead.id), rows).all()
         case_rows = [
             {
+                "id": lead_id,
                 "lead_id": lead_id,
                 "firm_id": row["firm_id"],
                 "status": rng.choice([CaseStatus.open, CaseStatus.in_progress, CaseStatus.on_hold]),

@@ -55,7 +55,7 @@ export function NotesPanel({ caseId, firmName }: { caseId: number; firmName: str
           Private notes
         </Group>
       }
-      description={`Only ${firmName} staff can see these. Never shown to the client.`}
+      description={`Only ${firmName} staff can see these. Never shown to the plaintiff.`}
       bg={PRIVATE_BG}
       borderColor={PRIVATE_BORDER}
     >

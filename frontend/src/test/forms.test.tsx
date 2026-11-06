@@ -64,12 +64,12 @@ describe('DeclineModal', () => {
     );
     const user = userEvent.setup();
 
-    await user.click(await screen.findByRole('button', { name: 'Decline request' }));
+    await user.click(await screen.findByRole('button', { name: 'Decline lead' }));
     expect(onConfirm).not.toHaveBeenCalled();
     expect(screen.getByText(/Please give a reason/)).toBeInTheDocument();
 
     await user.click(screen.getByText('Conflict of interest'));
-    await user.click(screen.getByRole('button', { name: 'Decline request' }));
+    await user.click(screen.getByRole('button', { name: 'Decline lead' }));
     expect(onConfirm).toHaveBeenCalledWith('Conflict of interest');
   });
 });

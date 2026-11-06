@@ -115,9 +115,13 @@ class LeadDecline(Base):
 
 class Case(Base):
     __tablename__ = "cases"
-    __table_args__ = (Index("ix_cases_firm_status_updated", "firm_id", "status", "updated_at"),)
+    __table_args__ = (
+        Index("ix_cases_firm_status_updated", "firm_id", "status", "updated_at"),
+        # One number per matter: a case reuses its lead's id, so lead #8 becomes case #8.
+        CheckConstraint("id = lead_id", name="ck_cases_id_matches_lead"),
+    )
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
     lead_id: Mapped[int] = mapped_column(ForeignKey("leads.id"), unique=True)
     firm_id: Mapped[int] = mapped_column(ForeignKey("firms.id"))
     status: Mapped[CaseStatus] = mapped_column(enum_col(CaseStatus))

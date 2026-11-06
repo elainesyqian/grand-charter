@@ -25,7 +25,7 @@ const columns: Column<AdminLead>[] = [
   { key: 'id', header: '#', render: (l) => l.id, width: 70 },
   {
     key: 'client',
-    header: 'Client',
+    header: 'Plaintiff',
     render: (l) => (
       <div>
         <Text size="sm" fw={600}>
@@ -83,7 +83,7 @@ export function LeadsSearchPage() {
 
   return (
     <>
-      <PageHeader title="Leads" subtitle="Every request across all firms." />
+      <PageHeader title="Leads" subtitle="Every lead across all firms." />
       <FiltersBar
         active={active}
         onClear={() =>
@@ -93,7 +93,7 @@ export function LeadsSearchPage() {
         <SearchInput
           value={values.q}
           onChange={(q) => set({ q })}
-          placeholder="Search name, email, details or request #"
+          placeholder="Search name, email, details or lead #"
         />
         <FilterSelect
           label="Status"
@@ -135,7 +135,7 @@ export function LeadsSearchPage() {
         data={leads.data}
         loading={leads.isFetching}
         onRowClick={(l) => navigate(`/admin/leads/${l.id}`)}
-        rowLabel={(l) => `Open request ${l.id}`}
+        rowLabel={(l) => `Open lead ${l.id}`}
         onPageChange={(p) => set({ page: p })}
         empty={emptyTable('No leads match', active ? 'Try removing a filter.' : undefined)}
       />

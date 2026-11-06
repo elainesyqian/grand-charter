@@ -28,7 +28,7 @@ export function describeEvent(
   const after = e.after ?? {};
   switch (e.action) {
     case 'lead.created':
-      return { text: 'Request submitted', color: 'navy', icon: <IconInbox size={14} /> };
+      return { text: 'Lead submitted', color: 'navy', icon: <IconInbox size={14} /> };
     case 'lead.routed':
       return {
         text: `Automatically routed to ${firm(names, after.firm_id)}`,
@@ -122,7 +122,7 @@ export function AuditTimeline({
                 {actorLabel(e)} · <When iso={e.created_at} />
               </Text>
               <Anchor component={Link} to={entityLink(e)} size="xs" c="dimmed">
-                {e.entity_type === 'lead' ? `Request #${e.entity_id}` : `Case #${e.entity_id}`}
+                {e.entity_type === 'lead' ? `Lead #${e.entity_id}` : `Case #${e.entity_id}`}
               </Anchor>
             </Group>
           </Timeline.Item>

@@ -46,7 +46,7 @@ function UpdateComposer({ c }: { c: FirmCaseDetail }) {
       notifications.show({
         color: 'army',
         title: 'Update posted',
-        message: 'The client can now see it.',
+        message: 'The plaintiff can now see it.',
       });
     },
   });
@@ -74,10 +74,10 @@ function UpdateComposer({ c }: { c: FirmCaseDetail }) {
   return (
     <Section
       title="Post an update"
-      description="Keep your client informed."
+      description="Keep the plaintiff informed."
       actions={
         <Badge color="army" leftSection={<IconEye size={12} />}>
-          Visible to client
+          Visible to plaintiff
         </Badge>
       }
     >
@@ -94,7 +94,7 @@ function UpdateComposer({ c }: { c: FirmCaseDetail }) {
           w={{ base: '100%', xs: 240 }}
         />
         <Textarea
-          label="Message to client"
+          label="Message to plaintiff"
           placeholder="e.g. We've sent a demand letter to the insurer and expect a reply within 30 days."
           autosize
           minRows={3}
@@ -141,32 +141,31 @@ export function FirmCasePage() {
       />
       {closed && (
         <Alert color="stone" icon={<IconLock size={18} />} mb="lg" title="This case is closed">
-          It's read-only now: no more client updates or uploads. You can still add private notes.
+          It's read-only now: no more plaintiff updates or uploads. You can still add private notes.
         </Alert>
       )}
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 7 }}>
           <Stack gap="lg">
             {!closed && <UpdateComposer key={c.status} c={c} />}
-            <Section title="Progress" description="What your client sees, newest first.">
+            <Section title="Progress" description="What the plaintiff sees, newest first.">
               {updates.isPending ? (
                 <Loading />
               ) : updates.isError ? (
                 <LoadError error={updates.error} />
               ) : updates.data.items.length === 0 ? (
                 <Text size="sm" c="dimmed">
-                  No updates yet. Post one to let your client know where things stand.
+                  No updates yet. Post one to let the plaintiff know where things stand.
                 </Text>
               ) : (
                 <UpdatesTimeline updates={updates.data.items} />
               )}
             </Section>
-            <Section title="Client & request">
+            <Section title="Lead">
               <Stack gap="lg">
                 <FieldGrid>
-                  <Field label="Client">{c.plaintiff_name}</Field>
+                  <Field label="Plaintiff">{c.plaintiff_name}</Field>
                   <Field label="Email">{c.plaintiff_email}</Field>
-                  <Field label="Original request">#{c.lead_id}</Field>
                 </FieldGrid>
                 <Field label="What happened">
                   <span className="gc-prose">{c.description}</span>
@@ -184,7 +183,7 @@ export function FirmCasePage() {
               fetch={() => firmApi.listDocuments(id)}
               upload={(file) => firmApi.uploadDocument(id, file)}
               uploadDisabledReason={closed ? 'This case is closed' : null}
-              description="Shared with the client. PDFs only, up to 10 MB."
+              description="Shared with the plaintiff. PDFs only, up to 10 MB."
             />
           </Stack>
         </Grid.Col>

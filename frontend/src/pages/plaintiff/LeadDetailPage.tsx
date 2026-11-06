@@ -15,7 +15,7 @@ import {
   PlaintiffStatusBadge,
   Section,
 } from '../../components/ui';
-import { CATEGORY_LABELS, REGION_LABELS, formatDate, leadNumber } from '../../lib/format';
+import { CATEGORY_LABELS, REGION_LABELS, formatDate, recordNumber } from '../../lib/format';
 
 export function LeadDetailPage() {
   const id = Number(useParams().id);
@@ -37,9 +37,9 @@ export function LeadDetailPage() {
   return (
     <>
       <PageHeader
-        back={{ to: '/plaintiff', label: 'My requests' }}
+        back={{ to: '/plaintiff', label: 'My cases' }}
         title={CATEGORY_LABELS[l.category]}
-        subtitle={`${leadNumber(l.id)} · ${REGION_LABELS[l.region]} · Submitted ${formatDate(l.created_at)}`}
+        subtitle={`${recordNumber(l)} · ${REGION_LABELS[l.region]} · Submitted ${formatDate(l.created_at)}`}
         badge={
           <Group gap={6}>
             <PlaintiffStatusBadge status={l.display_status} />
@@ -65,7 +65,7 @@ export function LeadDetailPage() {
           variant="light"
           icon={<IconHourglassHigh size={20} />}
           mb="lg"
-          title="We're reviewing your request"
+          title="We're reviewing your lead"
         >
           We're connecting you with a law firm that handles this kind of case. You'll see here when
           a firm accepts it. In the meantime, you can add any documents that might help.
@@ -84,13 +84,13 @@ export function LeadDetailPage() {
                 <Text size="sm" c="dimmed">
                   {l.firm
                     ? 'No updates yet. Your firm will post them here.'
-                    : 'Updates will appear here once a firm accepts your request.'}
+                    : 'Updates will appear here once a firm accepts your lead.'}
                 </Text>
               ) : (
                 <UpdatesTimeline updates={updates.data.items} />
               )}
             </Section>
-            <Section title="Your request">
+            <Section title={l.case_id ? 'Your original lead' : 'Your lead'}>
               <Stack gap="md">
                 <FieldGrid>
                   <Field label="Name">{l.name}</Field>

@@ -58,11 +58,13 @@ Open http://localhost:5173 and sign in with any demo account (password `demo123`
 > **Pro tip:** to stay signed in as several people at once, open each one at its own URL in Chrome, such as http://localhost:5173, http://firm.localhost:5173 and http://admin.localhost:5173. It's the same app, but Chrome keeps a separate session cookie for each hostname, so signing in on one doesn't sign you out of the others. Any `*.localhost` name works with no setup.
 
 **Example workflow** (about 3 minutes):
-1. Sign in as `plaintiff1@demo` (Liam Lester, client). Submit a new *Employment* request in the *West*, then upload a PDF.
-2. **Sign out**, then sign in as `attorney.a@demo` (Ana Deering, Alley & Deering). The request is in the inbox. Accept it, post an update, and add a private note.
+1. Sign in as `plaintiff1@demo` (Liam Lester, plaintiff). Submit a new *Employment* lead in the *West*, then upload a PDF.
+2. **Sign out**, then sign in as `attorney.a@demo` (Ana Deering, Alley & Deering). The lead is in the inbox. Accept it, post an update, and add a private note.
 3. Sign in as `admin@demo`. Open the case and **Reassign case** to Hayes & Teale LLP. Look at the *History* and *Private notes* tabs.
 4. Sign in as `attorney.b@demo` (Becky Teale, Hayes & Teale). The case and documents are there, but not Alley & Deering's note. Ana Deering now gets "couldn't find that".
 5. Back as Liam: progress and documents are visible; private notes never are.
+
+Which firm gets a lead depends on its category and region; see the [seeded routing table](docs/architecture.md#seeded-routing-table). Criminal defense is never routed, so it goes straight to the admin queue.
 
 ## Documentation
 
@@ -76,7 +78,7 @@ Open http://localhost:5173 and sign in with any demo account (password `demo123`
 
 - **One app, modular monolith.** A React SPA and one FastAPI service with role-scoped routers; no microservices to keep consistent. [Why](docs/architecture.md#overview)
 - **Access is derived, not stored.** A firm can see a lead or case only while its `firm_id` is theirs, so reassignment revokes access with no extra code. Filters run in SQL, and "not yours" returns 404. [Access rules](docs/architecture.md#access-rules-policypy)
-- **Private notes can't leak.** Client-visible updates and firm-private notes are separate tables, and plaintiff schemas have no notes field at all. Notes stay with the firm that wrote them after a reassignment. [Data model](docs/architecture.md#data-model)
+- **Private notes can't leak.** Plaintiff-visible updates and firm-private notes are separate tables, and plaintiff schemas have no notes field at all. Notes stay with the firm that wrote them after a reassignment. [Data model](docs/architecture.md#data-model)
 - **Safe under concurrency.** Accept, decline, assign and reassign are compare-and-set updates that return 409 on a race, with `UNIQUE(case.lead_id)` as a backstop. [Edge cases](docs/decisions.md#edge-cases)
 - **Audit log written in the same transaction** as every assignment and status change, so the log and the data can't drift. [Audit log](docs/architecture.md#audit-log)
 - **Documents are never served statically.** Every download goes through an access check; uploads are signature- and size-checked. [File storage](docs/architecture.md#file-storage)
@@ -108,4 +110,4 @@ SQLite (SQLAlchemy)     storage/ (PDFs on local disk)
 
 Dependencies are pinned (`requirements.txt` for runtime, `requirements-dev.txt` adds pytest, httpx and ruff), and pip/npm downloads are cached between runs.
 
-<sub><a href="docs/easter-eggs.md">did u catch the easter eggs?</a></sub>
+<sub><a href="docs/easter-eggs.md">did you catch the easter eggs?</a></sub>

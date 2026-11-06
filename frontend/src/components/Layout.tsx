@@ -47,8 +47,8 @@ function useNavItems(user: Me | null): NavItem[] {
   switch (user?.role) {
     case 'plaintiff':
       return [
-        { to: '/plaintiff', label: 'My requests', end: true },
-        { to: '/plaintiff/new', label: 'New request' },
+        { to: '/plaintiff', label: 'My cases', end: true },
+        { to: '/plaintiff/new', label: 'New lead' },
       ];
     case 'staff':
       return [

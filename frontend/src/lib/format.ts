@@ -50,7 +50,7 @@ export const PLAINTIFF_STATUS: Record<PlaintiffLeadStatus, BadgeStyle> = {
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
-  plaintiff: 'Client',
+  plaintiff: 'Plaintiff',
   staff: 'Firm staff',
   admin: 'Administrator',
 };
@@ -77,4 +77,8 @@ export function formatBytes(bytes: number): string {
 }
 
 export const caseNumber = (id: number) => `Case #${id}`;
-export const leadNumber = (id: number) => `Request #${id}`;
+export const leadNumber = (id: number) => `Lead #${id}`;
+
+/** A case keeps its lead's number, so only the word changes once a firm accepts. */
+export const recordNumber = (r: { id: number; case_id: number | null }) =>
+  r.case_id ? `Case #${r.case_id}` : leadNumber(r.id);

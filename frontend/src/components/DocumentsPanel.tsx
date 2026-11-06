@@ -20,7 +20,7 @@ export function checkPdf(file: File): string | null {
 }
 
 function uploaderLabel(doc: DocumentOut, viewer: 'plaintiff' | 'firm' | 'admin') {
-  if (doc.uploader_role === 'plaintiff') return viewer === 'plaintiff' ? 'You' : 'Client';
+  if (doc.uploader_role === 'plaintiff') return viewer === 'plaintiff' ? 'You' : 'Plaintiff';
   return doc.uploader_firm?.name ?? 'Firm';
 }
 

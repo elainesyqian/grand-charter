@@ -38,7 +38,7 @@ function QueueTable({
     { key: 'received', header: 'Received', render: (l) => <When iso={l.created_at} />, width: 130 },
     {
       key: 'client',
-      header: 'Request',
+      header: 'Lead',
       render: (l) => (
         <div>
           <Text size="sm" fw={600}>
@@ -115,11 +115,11 @@ function QueueTable({
         data={leads.data}
         loading={leads.isFetching}
         onRowClick={(l) => navigate(`/admin/leads/${l.id}`)}
-        rowLabel={(l) => `Open request ${l.id}`}
+        rowLabel={(l) => `Open lead ${l.id}`}
         onPageChange={(p) => set({ [pageKey]: p } as Record<typeof pageKey, number>)}
         empty={emptyTable(
           'Nothing here',
-          status === 'declined' ? 'No declined requests to resolve.' : 'Every request has a firm.',
+          status === 'declined' ? 'No declined leads to resolve.' : 'Every lead has a firm.',
         )}
       />
     </Stack>
@@ -135,7 +135,7 @@ export function QueuePage() {
     <>
       <PageHeader
         title="Needs attention"
-        subtitle="Requests that couldn't be routed automatically, or that a firm turned down."
+        subtitle="Leads that couldn't be routed automatically, or that a firm turned down."
         actions={
           <Button
             variant="default"

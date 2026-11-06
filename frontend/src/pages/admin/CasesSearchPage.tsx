@@ -17,7 +17,7 @@ const columns: Column<AdminCase>[] = [
   { key: 'id', header: 'Case', render: (c) => `#${c.id}`, width: 80 },
   {
     key: 'client',
-    header: 'Client',
+    header: 'Plaintiff',
     render: (c) => (
       <Text size="sm" fw={600}>
         {c.plaintiff_name}
@@ -65,7 +65,7 @@ export function CasesSearchPage() {
         <SearchInput
           value={values.q}
           onChange={(q) => set({ q })}
-          placeholder="Search client, email, details or case #"
+          placeholder="Search plaintiff, email, details or case #"
         />
         <FilterSelect
           label="Status"

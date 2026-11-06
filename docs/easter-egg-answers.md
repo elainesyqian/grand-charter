@@ -4,7 +4,7 @@
 
 | Name | Reference |
 |---|---|
-| Alley & Deering LLP | The Alley; Their logo is a deer |
+| Alley & Deering LLP | The Alley; their logo is a deer |
 | Hayes & Teale LLP | HeyTea (say it out loud) |
 | Chetham & Tyne LLP | Chatime |
 
