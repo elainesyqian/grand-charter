@@ -1,10 +1,12 @@
 import { Anchor, Button, FileButton, Group, Stack, Text, ThemeIcon, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconExternalLink, IconFileTypePdf, IconUpload } from '@tabler/icons-react';
-import { type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
 import { documentUrl } from '../api/client';
 import type { DocumentOut, Page } from '../api/types';
 import { formatBytes } from '../lib/format';
+import { usePagedList } from '../lib/usePagedList';
+import { ShowOlder } from './ShowOlder';
 import { Loading, LoadError, Section, When } from './ui';
 
 export const MAX_UPLOAD_MB = 10;
@@ -33,14 +35,14 @@ export function DocumentsPanel({
   description,
 }: {
   queryKey: QueryKey;
-  fetch: () => Promise<Page<DocumentOut>>;
+  fetch: (page: number) => Promise<Page<DocumentOut>>;
   upload?: (file: File) => Promise<DocumentOut>;
   uploadDisabledReason?: string | null;
   viewer: 'plaintiff' | 'firm' | 'admin';
   description?: string;
 }) {
   const qc = useQueryClient();
-  const docs = useQuery({ queryKey, queryFn: fetch });
+  const docs = usePagedList(queryKey, fetch);
   const mutation = useMutation({
     mutationFn: (file: File) => upload!(file),
     onSuccess: (doc) => {
@@ -87,13 +89,13 @@ export function DocumentsPanel({
         <Loading />
       ) : docs.isError ? (
         <LoadError error={docs.error} />
-      ) : docs.data.items.length === 0 ? (
+      ) : docs.items.length === 0 ? (
         <Text size="sm" c="dimmed">
           No documents yet.
         </Text>
       ) : (
         <Stack gap="xs">
-          {docs.data.items.map((doc) => (
+          {docs.items.map((doc) => (
             <Group key={doc.id} gap="sm" wrap="nowrap" align="flex-start">
               <ThemeIcon variant="light" color="navy" size="lg">
                 <IconFileTypePdf size={18} />
@@ -116,6 +118,7 @@ export function DocumentsPanel({
               </div>
             </Group>
           ))}
+          <ShowOlder list={docs} noun="documents" />
         </Stack>
       )}
     </Section>

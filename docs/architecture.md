@@ -172,6 +172,7 @@ Admins see the history on each lead or case page and in a global, filterable aud
   - A 401 sends you to the login page.
   - A 404 shows "couldn't find that". That's also what a firm sees after a case moves away from it.
 - **Filters and page numbers live in the URL,** so refresh, back and shared links keep your view. Search is debounced.
+- **Long case histories load in pages.** A case can have hundreds of updates, notes, documents and history events, so each section shows the newest 50 with "Showing 50 of 230 · Show older" to load more (`usePagedList`, built on TanStack Query's infinite queries). Repeats are dropped by id, in case a new record shifted the pages. The admin's notes-by-firm filter runs on the server, so it finds older notes too.
 - **Pages are lazy-loaded per route,** so a client never downloads admin screens. A thin progress bar shows while a page's code loads.
 - **Responsive:** on phones the nav moves into a burger menu, two-column pages stack, and wide tables scroll sideways.
 - **Accessibility:** table rows are keyboard-focusable (Enter opens them), every icon-only control has a label, and relative times show the exact timestamp on hover.

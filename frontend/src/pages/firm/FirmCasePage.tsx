@@ -27,6 +27,8 @@ import {
   REGION_LABELS,
   formatDate,
 } from '../../lib/format';
+import { usePagedList } from '../../lib/usePagedList';
+import { ShowOlder } from '../../components/ShowOlder';
 
 function UpdateComposer({ c }: { c: FirmCaseDetail }) {
   const qc = useQueryClient();
@@ -119,11 +121,13 @@ export function FirmCasePage() {
   const id = Number(useParams().id);
   const user = useUser();
   const kase = useQuery({ queryKey: ['firm', 'case', id], queryFn: () => firmApi.getCase(id) });
-  const updates = useQuery({
-    queryKey: ['firm', 'case', id, 'updates'],
-    queryFn: () => firmApi.listUpdates(id),
-    enabled: kase.isSuccess,
-  });
+  const updates = usePagedList(
+    ['firm', 'case', id, 'updates'],
+    (page) => firmApi.listUpdates(id, page),
+    {
+      enabled: kase.isSuccess,
+    },
+  );
 
   if (kase.isPending) return <Loading />;
   if (kase.isError) return <LoadError error={kase.error} backTo="/firm/cases" />;
@@ -153,12 +157,15 @@ export function FirmCasePage() {
                 <Loading />
               ) : updates.isError ? (
                 <LoadError error={updates.error} />
-              ) : updates.data.items.length === 0 ? (
+              ) : updates.items.length === 0 ? (
                 <Text size="sm" c="dimmed">
                   No updates yet. Post one to let the plaintiff know where things stand.
                 </Text>
               ) : (
-                <UpdatesTimeline updates={updates.data.items} />
+                <>
+                  <UpdatesTimeline updates={updates.items} />
+                  <ShowOlder list={updates} noun="updates" />
+                </>
               )}
             </Section>
             <Section title="Lead">
@@ -180,7 +187,7 @@ export function FirmCasePage() {
             <DocumentsPanel
               viewer="firm"
               queryKey={['firm', 'case', id, 'documents']}
-              fetch={() => firmApi.listDocuments(id)}
+              fetch={(page) => firmApi.listDocuments(id, page)}
               upload={(file) => firmApi.uploadDocument(id, file)}
               uploadDisabledReason={closed ? 'This case is closed' : null}
               description="Shared with the plaintiff. PDFs only, up to 10 MB."
