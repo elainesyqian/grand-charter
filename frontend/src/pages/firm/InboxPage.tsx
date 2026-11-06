@@ -17,7 +17,7 @@ const columns: Column<InboxLead>[] = [
   { key: 'received', header: 'Received', render: (l) => <When iso={l.created_at} />, width: 140 },
   {
     key: 'client',
-    header: 'Client',
+    header: 'Plaintiff',
     render: (l) => (
       <Text size="sm" fw={600}>
         {l.name}
@@ -59,7 +59,7 @@ export function InboxPage() {
     <>
       <PageHeader
         title="Inbox"
-        subtitle={`New requests routed to ${user.firm?.name}. Review each one and accept or decline it.`}
+        subtitle={`New leads routed to ${user.firm?.name}. Review each one and accept or decline it.`}
       />
       <SegmentedControl
         mb="md"
@@ -105,20 +105,20 @@ export function InboxPage() {
         data={leads.data}
         loading={leads.isFetching}
         onRowClick={(l) => navigate(`/firm/leads/${l.id}`)}
-        rowLabel={(l) => `Open request from ${l.name}`}
+        rowLabel={(l) => `Open lead from ${l.name}`}
         onPageChange={(p) => set({ page: p })}
         empty={
           filtersActive
             ? emptyTable(
-                'No requests match these filters',
+                'No leads match these filters',
                 'Try clearing a filter or searching for something else.',
               )
             : view === 'new'
               ? emptyTable(
                   "You're all caught up",
-                  'New requests routed to your firm will show up here.',
+                  'New leads routed to your firm will show up here.',
                 )
-              : emptyTable('No accepted requests yet')
+              : emptyTable('No accepted leads yet')
         }
       />
     </>

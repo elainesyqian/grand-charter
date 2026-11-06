@@ -14,7 +14,7 @@ import { useUrlState } from '../../lib/useUrlState';
 const FILTERS = ['entity', 'action', 'when'] as const;
 
 const ACTION_LABELS: Record<AuditAction, string> = {
-  'lead.created': 'Request submitted',
+  'lead.created': 'Lead submitted',
   'lead.routed': 'Routed automatically',
   'lead.unmatched': 'No firm matched',
   'lead.assigned': 'Assigned by admin',
@@ -66,7 +66,7 @@ export function AuditPage() {
       width: 130,
       render: (e) => (
         <Anchor component={Link} to={entityLink(e)} size="sm">
-          {e.entity_type === 'lead' ? `Request #${e.entity_id}` : `Case #${e.entity_id}`}
+          {e.entity_type === 'lead' ? `Lead #${e.entity_id}` : `Case #${e.entity_id}`}
         </Anchor>
       ),
     },
@@ -86,7 +86,7 @@ export function AuditPage() {
         <FilterSelect
           label="Record type"
           data={[
-            { value: 'lead', label: 'Requests' },
+            { value: 'lead', label: 'Leads' },
             { value: 'case', label: 'Cases' },
           ]}
           value={values.entity}

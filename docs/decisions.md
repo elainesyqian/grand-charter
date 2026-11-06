@@ -43,6 +43,9 @@ SQLite needs zero setup, and WAL mode lets reads continue during writes. Its rea
 - **Declining removes the firm's access.** The lead returns to the admin queue, and the decline is kept in `LeadDecline` and the audit log.
 - **Documents transfer on reassignment, including ones uploaded by earlier firms.** They were shared with the plaintiff, so they aren't firm-private. Only notes are firm-private.
 - **A firm loses access to its own notes after a case is reassigned away.** Admins can still read them. No archive UI is provided, per the spec.
+- **"Authorized admins can inspect" notes means read-only.** Admins can read every firm's notes, labelled by authoring firm, but can't edit or delete them. The notes are a firm's own work record, so an admin rewriting them would undermine that ownership. The app has a single admin role, so every admin counts as authorized.
+- **Admins can't add notes.** Notes are *firm*-private and every note belongs to an authoring firm (`author_firm_id`). An admin isn't part of any firm, so an admin note wouldn't fit that model. An admin's reasoning is captured instead by the optional reason on assign/reassign, which is stored in the audit log.
+- **One number per matter.** A case takes its lead's id instead of getting its own sequence, so lead #8 becomes case #8. With separate sequences, lead #8 might become case #4, and plaintiffs would see their number change on acceptance. Numbers are global, not per firm, so a firm's cases aren't consecutive (it might hold #1, #4 and #9) but never collide.
 - **Routing runs once, at submission.** Later changes to the routing rules don't re-route existing leads.
 - **The routing table is seeded**, with no editor UI, per the spec.
 - **Plaintiffs don't see internal routing.** `unassigned`, `assigned` and `declined` all show to the plaintiff as "under review". The firm name appears once a firm accepts.

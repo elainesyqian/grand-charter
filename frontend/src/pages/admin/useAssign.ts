@@ -13,7 +13,7 @@ export function useAssignLead(onDone?: () => void) {
       notifications.show({
         color: 'army',
         title: 'Lead assigned',
-        message: `Request #${lead.id} is now with ${lead.firm?.name}.`,
+        message: `Lead #${lead.id} is now with ${lead.firm?.name}.`,
       });
       onDone?.();
     },

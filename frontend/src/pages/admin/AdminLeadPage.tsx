@@ -71,7 +71,7 @@ export function AdminLeadPage() {
           color="army"
           icon={<IconCircleCheck size={20} />}
           mb="lg"
-          title="Accepted. This request has a case."
+          title="Accepted. This lead has a case."
         >
           To move it to another firm, reassign the case. Its documents and progress go with it.
         </Alert>
@@ -79,10 +79,10 @@ export function AdminLeadPage() {
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 7 }}>
           <Stack gap="lg">
-            <Section title="Request details">
+            <Section title="Lead details">
               <Stack gap="lg">
                 <FieldGrid>
-                  <Field label="Client">{l.name}</Field>
+                  <Field label="Plaintiff">{l.name}</Field>
                   <Field label="Email">{l.email}</Field>
                   <Field label="Account">{l.plaintiff.name}</Field>
                   <Field label="Category">{CATEGORY_LABELS[l.category]}</Field>
@@ -132,7 +132,7 @@ export function AdminLeadPage() {
               )}
             </Paper>
             {l.declines.length > 0 && (
-              <Section title="Declines" description="Firms that turned this request down.">
+              <Section title="Declines" description="Firms that turned this lead down.">
                 <Stack gap="sm">
                   {l.declines.map((d) => (
                     <Paper
@@ -159,7 +159,7 @@ export function AdminLeadPage() {
               viewer="admin"
               queryKey={['admin', 'lead', id, 'documents']}
               fetch={() => adminApi.listLeadDocuments(id)}
-              description="Shared between the client and the firm."
+              description="Shared between the plaintiff and the firm."
             />
           </Stack>
         </Grid.Col>

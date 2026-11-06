@@ -22,6 +22,21 @@ def test_accept_creates_exactly_one_case(db):
     assert view["display_status"] == "accepted"
     assert view["case_status"] == "open"
     assert view["firm"]["name"].startswith("Alley")
+    assert view["case_id"] == lead.id
+
+
+def test_case_number_is_the_lead_number(db):
+    """One number per matter: lead #N becomes case #N, and it survives reassignment."""
+    for case in db.scalars(select(Case)):
+        assert case.id == case.lead_id
+    lead = lead_by_description(db, "Let go two weeks")
+    case = login("attorney.a@demo").post(f"/api/firm/leads/{lead.id}/accept").json()
+    assert case["id"] == lead.id
+    res = login("admin@demo").post(
+        f"/api/admin/cases/{case['id']}/reassign", json={"firm_id": firm_id(db, "Hayes & Teale")}
+    )
+    assert res.status_code == 200
+    assert res.json()["id"] == lead.id
 
 
 def test_decline_requires_reason_and_removes_access(db):

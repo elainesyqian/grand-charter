@@ -43,11 +43,11 @@ export function DeclineModal({
     touched && !reason.trim() ? 'Please give a reason so an admin can find a better fit' : null;
 
   return (
-    <Modal opened={opened} onClose={onClose} title={<Text fw={600}>Decline this request?</Text>}>
+    <Modal opened={opened} onClose={onClose} title={<Text fw={600}>Decline this lead?</Text>}>
       <Stack gap="md">
         <Text size="sm" c="dimmed">
-          The request goes back to an administrator to find another firm. Your firm will no longer
-          see it. The client isn't told it was declined.
+          The lead goes back to an administrator to find another firm. Your firm will no longer see
+          it. The plaintiff isn't told it was declined.
         </Text>
         <Group gap={6}>
           {QUICK_REASONS.map((r) => (
@@ -86,7 +86,7 @@ export function DeclineModal({
               if (reason.trim()) onConfirm(reason.trim());
             }}
           >
-            Decline request
+            Decline lead
           </Button>
         </Group>
       </Stack>
@@ -108,7 +108,7 @@ export function FirmLeadPage() {
       void qc.invalidateQueries({ queryKey: ['firm'] });
       notifications.show({
         color: 'army',
-        title: 'Request accepted',
+        title: 'Lead accepted',
         message: `Case #${c.id} is open.`,
       });
       navigate(`/firm/cases/${c.id}`);
@@ -121,7 +121,7 @@ export function FirmLeadPage() {
       qc.removeQueries({ queryKey: ['firm', 'lead', id] });
       void qc.invalidateQueries({ queryKey: ['firm', 'leads'] });
       notifications.show({
-        title: 'Request declined',
+        title: 'Lead declined',
         message: 'It has been returned to an administrator.',
       });
       navigate('/firm/inbox');
@@ -134,7 +134,7 @@ export function FirmLeadPage() {
 
   const confirmAccept = () =>
     modals.openConfirmModal({
-      title: <Text fw={600}>Accept this request?</Text>,
+      title: <Text fw={600}>Accept this lead?</Text>,
       children: (
         <Text size="sm" c="dimmed">
           A case will be opened for {user.firm?.name}. {l.name} will see that your firm is handling
@@ -181,7 +181,7 @@ export function FirmLeadPage() {
           color="army"
           icon={<IconCircleCheck size={20} />}
           mb="lg"
-          title="Your firm accepted this request"
+          title="Your firm accepted this lead"
         >
           <Button
             component={Link}
@@ -197,10 +197,10 @@ export function FirmLeadPage() {
       )}
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 7 }}>
-          <Section title="Request details">
+          <Section title="Lead details">
             <Stack gap="lg">
               <FieldGrid>
-                <Field label="Client">{l.name}</Field>
+                <Field label="Plaintiff">{l.name}</Field>
                 <Field label="Email">{l.email}</Field>
                 <Field label="Category">{CATEGORY_LABELS[l.category]}</Field>
                 <Field label="Region">{REGION_LABELS[l.region]}</Field>
@@ -216,7 +216,7 @@ export function FirmLeadPage() {
             viewer="firm"
             queryKey={['firm', 'lead', id, 'documents']}
             fetch={() => firmApi.listLeadDocuments(id)}
-            description="Uploaded by the client."
+            description="Uploaded by the plaintiff."
           />
         </Grid.Col>
       </Grid>

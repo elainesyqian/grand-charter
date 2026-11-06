@@ -50,12 +50,12 @@ function NextSteps() {
     {
       icon: <IconSearch size={16} />,
       title: 'We find the right firm',
-      text: 'Your request is matched to a firm that handles this kind of case in your region.',
+      text: 'Your lead is matched to a firm that handles this kind of case in your region.',
     },
     {
       icon: <IconBuildingBank size={16} />,
       title: 'The firm reviews it',
-      text: "You'll see here when a firm accepts your request.",
+      text: "You'll see here when a firm accepts your lead.",
     },
     {
       icon: <IconFileText size={16} />,
@@ -88,7 +88,7 @@ function NextSteps() {
         ))}
       </List>
       <Text size="xs" c="dimmed" mt="lg">
-        Your information is only shared with the firm handling your request.
+        Your information is only shared with the firm handling your lead.
       </Text>
     </Paper>
   );
@@ -121,7 +121,7 @@ export function NewLeadPage() {
       void qc.invalidateQueries({ queryKey: ['plaintiff', 'leads'] });
       notifications.show({
         color: 'army',
-        title: 'Request submitted',
+        title: 'Lead submitted',
         message: "We're matching you with a firm. You can add documents now.",
       });
       navigate(`/plaintiff/leads/${lead.id}`);
@@ -142,7 +142,7 @@ export function NewLeadPage() {
       <PageHeader
         title="Request legal help"
         subtitle="Tell us about your situation. It only takes a few minutes."
-        back={{ to: '/plaintiff', label: 'My requests' }}
+        back={{ to: '/plaintiff', label: 'My cases' }}
       />
       <Grid gap="xl">
         <Grid.Col span={{ base: 12, md: 7 }}>
@@ -209,7 +209,7 @@ export function NewLeadPage() {
                   Cancel
                 </Button>
                 <Button type="submit" loading={submit.isPending}>
-                  Submit request
+                  Submit lead
                 </Button>
               </Group>
             </Stack>

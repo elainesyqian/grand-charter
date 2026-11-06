@@ -14,7 +14,7 @@ import {
   PlaintiffStatusBadge,
   When,
 } from '../../components/ui';
-import { CATEGORY_LABELS, REGION_LABELS, leadNumber } from '../../lib/format';
+import { CATEGORY_LABELS, REGION_LABELS, recordNumber } from '../../lib/format';
 import { useUrlState } from '../../lib/useUrlState';
 
 function LeadCard({ lead }: { lead: PlaintiffLeadSummary }) {
@@ -22,7 +22,7 @@ function LeadCard({ lead }: { lead: PlaintiffLeadSummary }) {
   return (
     <UnstyledButton
       onClick={() => navigate(`/plaintiff/leads/${lead.id}`)}
-      aria-label={`Open ${leadNumber(lead.id)}`}
+      aria-label={`Open ${recordNumber(lead)}`}
     >
       <Paper p="lg" className="gc-row-link" style={{ transition: 'border-color 120ms' }}>
         <Group justify="space-between" wrap="nowrap" gap="md">
@@ -31,7 +31,7 @@ function LeadCard({ lead }: { lead: PlaintiffLeadSummary }) {
               {CATEGORY_LABELS[lead.category]}
             </Text>
             <Text size="sm" c="dimmed">
-              {leadNumber(lead.id)} · {REGION_LABELS[lead.region]} · Submitted{' '}
+              {recordNumber(lead)} · {REGION_LABELS[lead.region]} · Submitted{' '}
               <When iso={lead.created_at} />
             </Text>
           </Stack>
@@ -57,15 +57,15 @@ export function MyLeadsPage() {
 
   const newButton = (
     <Button component={Link} to="/plaintiff/new" leftSection={<IconPlus size={16} />}>
-      New request
+      New lead
     </Button>
   );
 
   return (
     <>
       <PageHeader
-        title="My requests"
-        subtitle={`Welcome back, ${user.name.split(' ')[0]}. Track your requests and share documents with your firm.`}
+        title="My cases"
+        subtitle={`Welcome back, ${user.name.split(' ')[0]}. Track your cases and share documents with your firm.`}
         actions={newButton}
       />
       {leads.isPending ? (
@@ -75,7 +75,7 @@ export function MyLeadsPage() {
       ) : leads.data.total === 0 ? (
         <Paper>
           <Empty
-            title="You haven't submitted a request yet"
+            title="You haven't submitted a lead yet"
             description="Tell us what happened and we'll connect you with a law firm that handles cases like yours."
             action={newButton}
           />

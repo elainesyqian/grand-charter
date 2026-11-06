@@ -83,7 +83,7 @@ RoutingRule   category, region → firm_id                      UNIQUE(category,
 Lead          id, plaintiff_id, name, email, region, category, description,
               status, firm_id?, created_at, updated_at
 LeadDecline   lead_id, firm_id, user_id, reason, created_at   (firms that declined)
-Case          id, lead_id (UNIQUE), firm_id, status, created_at, updated_at
+Case          id (= lead_id), lead_id (UNIQUE), firm_id, status, created_at, updated_at
 CaseUpdate    case_id, author_id, from_status?, to_status?, message?, created_at  (visible to plaintiff)
 Note          case_id, author_firm_id, author_user_id, body, created_at  (firm-private)
 Document      id, lead_id, uploaded_by, uploader_role, uploader_firm_id?, filename,
@@ -94,6 +94,7 @@ AuditEvent    id, actor_id, entity_type, entity_id, action, before (JSON), after
 
 Design notes:
 - **Case is 1:1 with Lead**, enforced by `UNIQUE(case.lead_id)`. This also blocks two staff members accepting the same lead at the same moment.
+- **A case reuses its lead's number.** Lead #8 becomes case #8, enforced by `CHECK(id = lead_id)`. One number per matter means the plaintiff, every firm and admins all refer to it the same way, and it never changes, including on reassignment.
 - **Documents attach to the lead**, so a plaintiff can upload before a firm accepts, and the files carry over to the case and through any reassignment.
 - **CaseUpdate and Note are separate tables.** Updates are the progress timeline the plaintiff sees. Notes are firm-private. Keeping them apart means a plaintiff response can never accidentally include a note.
 
@@ -112,6 +113,21 @@ Case:  open ⇄ in_progress ⇄ on_hold ──► closed
 - **Routing** looks up `(category, region)` in `RoutingRule`. The unique constraint guarantees at most one firm. If there is no match, the lead becomes `unassigned`.
 - **Decline** sets `firm_id = NULL` and `status = declined`, and records a `LeadDecline` row. The declining firm loses access right away, and the admin UI warns before assigning the lead back to a firm that declined it.
 - The service layer checks every status change against an allowed-transitions table and rejects anything else.
+
+## Seeded routing table
+
+Which firm a new lead goes to, by category and region (defined in `ROUTING` in `seed.py`):
+
+| | Northeast | Southeast | Midwest | Southwest | West |
+|---|---|---|---|---|---|
+| **Personal injury** | Alley & Deering | Alley & Deering | Alley & Deering | Hayes & Teale | Alley & Deering |
+| **Employment** | Alley & Deering | Alley & Deering | Alley & Deering | Hayes & Teale | Alley & Deering |
+| **Family** | Hayes & Teale | Hayes & Teale | Hayes & Teale | Hayes & Teale | Hayes & Teale |
+| **Immigration** | Hayes & Teale | Hayes & Teale | Hayes & Teale | Hayes & Teale | Hayes & Teale |
+| **Real estate** | Chetham & Tyne | – | Chetham & Tyne | – | Chetham & Tyne |
+| **Criminal defense** | – | – | – | – | – |
+
+The gaps (–) are deliberate, so the "no match" path can be demoed: those leads become `unassigned` and go straight to the admin queue.
 
 ## Access rules (`policy.py`)
 
@@ -149,7 +165,7 @@ Admins see the history on each lead or case page and in a global, filterable aud
 ## Frontend design
 
 - **Look:** light mode only. No product name: the logo is just a scales-of-justice mark. Source Serif 4 for headings, Inter for everything else. Text is near-black and warm grays on an off-white page. Navy is the primary accent (buttons, links, in-progress states); army green marks positive states (accepted, open, success toasts). Fonts are self-hosted through `@fontsource`, so there are no external requests.
-- **Client-visible vs private is shown visually, not just in text.** On the firm's case page, the update composer carries a green "Visible to client" badge. Private notes sit in a separate warm-yellow panel with a lock icon and "Only <firm> staff can see these".
+- **Plaintiff-visible vs private is shown visually, not just in text.** On the firm's case page, the update composer carries a green "Visible to plaintiff" badge. Private notes sit in a separate warm-yellow panel with a lock icon and "Only <firm> staff can see these".
 - **Every hard-to-undo action asks first:** accept, decline (reason required, with quick-pick reasons), assign, reassign, and closing a case. The reassign dialog explains exactly who loses access and what moves. The assign dialog warns if the chosen firm declined the lead before.
 - **Data handling:** TanStack Query caches per role-scoped key and refetches after every change.
   - A 409 ("changed by someone else") shows a toast and refreshes the page's data.

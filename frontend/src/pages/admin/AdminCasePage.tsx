@@ -53,7 +53,7 @@ function NotesTab({ caseId }: { caseId: number }) {
           Private notes, all firms
         </Group>
       }
-      description="Each note belongs to the firm that wrote it. Firms only see their own; clients see none."
+      description="Each note belongs to the firm that wrote it. Firms only see their own; plaintiffs see none."
       bg={PRIVATE_BG}
       borderColor={PRIVATE_BORDER}
       actions={
@@ -130,7 +130,7 @@ export function AdminCasePage() {
       <PageHeader
         back={{ to: '/admin/cases', label: 'Cases' }}
         title={`Case #${c.id} · ${c.plaintiff_name}`}
-        subtitle={`${CATEGORY_LABELS[c.category]} · ${REGION_LABELS[c.region]} · Opened ${formatDate(c.created_at)} · From request #${c.lead_id}`}
+        subtitle={`${CATEGORY_LABELS[c.category]} · ${REGION_LABELS[c.region]} · Opened ${formatDate(c.created_at)}`}
         badge={<CaseStatusBadge status={c.status} />}
         actions={
           <Tooltip label="Closed cases can't be reassigned" disabled={!closed}>
@@ -155,7 +155,7 @@ export function AdminCasePage() {
             </Tabs.List>
             <Tabs.Panel value="overview">
               <Stack gap="lg">
-                <Section title="Progress" description="Client-visible updates.">
+                <Section title="Progress" description="Plaintiff-visible updates.">
                   {updates.isPending ? (
                     <Loading />
                   ) : updates.isError ? (
@@ -168,10 +168,10 @@ export function AdminCasePage() {
                     <UpdatesTimeline updates={updates.data.items} />
                   )}
                 </Section>
-                <Section title="Client & request">
+                <Section title="Lead">
                   <Stack gap="lg">
                     <FieldGrid>
-                      <Field label="Client">{c.plaintiff_name}</Field>
+                      <Field label="Plaintiff">{c.plaintiff_name}</Field>
                       <Field label="Email">{c.plaintiff_email}</Field>
                       <Field label="Region">{REGION_LABELS[c.region]}</Field>
                     </FieldGrid>
@@ -194,7 +194,7 @@ export function AdminCasePage() {
               />
             </Tabs.Panel>
             <Tabs.Panel value="history">
-              <Section title="History" description="The request and the case, newest first.">
+              <Section title="History" description="The lead and the case, newest first.">
                 {history.isPending ? (
                   <Loading />
                 ) : history.isError ? (

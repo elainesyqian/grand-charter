@@ -98,7 +98,7 @@ def accept(db: Session, staff: User, lead_id: int) -> Case:
         raise Conflict(f"Lead is {lead.status}, not awaiting a decision")
 
     _compare_and_set(db, lead, LeadStatus.assigned, staff.firm_id, status=LeadStatus.accepted)
-    case = Case(lead_id=lead.id, firm_id=staff.firm_id, status=CaseStatus.open)
+    case = Case(id=lead.id, lead_id=lead.id, firm_id=staff.firm_id, status=CaseStatus.open)
     db.add(case)
     try:
         db.flush()
