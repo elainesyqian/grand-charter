@@ -215,7 +215,7 @@ export function FirmLeadPage() {
           <DocumentsPanel
             viewer="firm"
             queryKey={['firm', 'lead', id, 'documents']}
-            fetch={() => firmApi.listLeadDocuments(id)}
+            fetch={(page) => firmApi.listLeadDocuments(id, page)}
             description="Uploaded by the plaintiff."
           />
         </Grid.Col>

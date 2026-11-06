@@ -1,9 +1,11 @@
 import { Badge, Button, Group, Paper, Stack, Text, Textarea } from '@mantine/core';
 import { IconLock } from '@tabler/icons-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { firmApi } from '../api/firm';
 import type { AdminNote, NoteOut } from '../api/types';
+import { usePagedList } from '../lib/usePagedList';
+import { ShowOlder } from './ShowOlder';
 import { Loading, LoadError, Section, When } from './ui';
 
 export const PRIVATE_BG = 'var(--gc-private-bg)';
@@ -36,7 +38,7 @@ export function NoteCard({
 export function NotesPanel({ caseId, firmName }: { caseId: number; firmName: string }) {
   const qc = useQueryClient();
   const queryKey = ['firm', 'case', caseId, 'notes'];
-  const notes = useQuery({ queryKey, queryFn: () => firmApi.listNotes(caseId) });
+  const notes = usePagedList(queryKey, (page) => firmApi.listNotes(caseId, page));
   const [body, setBody] = useState('');
 
   const add = useMutation({
@@ -90,12 +92,17 @@ export function NotesPanel({ caseId, firmName }: { caseId: number; firmName: str
           <Loading />
         ) : notes.isError ? (
           <LoadError error={notes.error} />
-        ) : notes.data.items.length === 0 ? (
+        ) : notes.items.length === 0 ? (
           <Text size="sm" c="dimmed">
             No notes yet.
           </Text>
         ) : (
-          notes.data.items.map((n) => <NoteCard key={n.id} note={n} />)
+          <>
+            {notes.items.map((n) => (
+              <NoteCard key={n.id} note={n} />
+            ))}
+            <ShowOlder list={notes} noun="notes" />
+          </>
         )}
       </Stack>
     </Section>

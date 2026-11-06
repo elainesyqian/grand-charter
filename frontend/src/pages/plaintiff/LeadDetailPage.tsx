@@ -16,6 +16,8 @@ import {
   Section,
 } from '../../components/ui';
 import { CATEGORY_LABELS, REGION_LABELS, formatDate, recordNumber } from '../../lib/format';
+import { usePagedList } from '../../lib/usePagedList';
+import { ShowOlder } from '../../components/ShowOlder';
 
 export function LeadDetailPage() {
   const id = Number(useParams().id);
@@ -23,11 +25,13 @@ export function LeadDetailPage() {
     queryKey: ['plaintiff', 'lead', id],
     queryFn: () => plaintiffApi.getLead(id),
   });
-  const updates = useQuery({
-    queryKey: ['plaintiff', 'lead', id, 'updates'],
-    queryFn: () => plaintiffApi.listUpdates(id),
-    enabled: lead.isSuccess,
-  });
+  const updates = usePagedList(
+    ['plaintiff', 'lead', id, 'updates'],
+    (page) => plaintiffApi.listUpdates(id, page),
+    {
+      enabled: lead.isSuccess,
+    },
+  );
 
   if (lead.isPending) return <Loading />;
   if (lead.isError) return <LoadError error={lead.error} backTo="/plaintiff" />;
@@ -80,14 +84,17 @@ export function LeadDetailPage() {
                 <Loading />
               ) : updates.isError ? (
                 <LoadError error={updates.error} />
-              ) : updates.data.items.length === 0 ? (
+              ) : updates.items.length === 0 ? (
                 <Text size="sm" c="dimmed">
                   {l.firm
                     ? 'No updates yet. Your firm will post them here.'
                     : 'Updates will appear here once a firm accepts your lead.'}
                 </Text>
               ) : (
-                <UpdatesTimeline updates={updates.data.items} />
+                <>
+                  <UpdatesTimeline updates={updates.items} />
+                  <ShowOlder list={updates} noun="updates" />
+                </>
               )}
             </Section>
             <Section title={l.case_id ? 'Your original lead' : 'Your lead'}>
@@ -108,7 +115,7 @@ export function LeadDetailPage() {
           <DocumentsPanel
             viewer="plaintiff"
             queryKey={['plaintiff', 'lead', id, 'documents']}
-            fetch={() => plaintiffApi.listDocuments(id)}
+            fetch={(page) => plaintiffApi.listDocuments(id, page)}
             upload={(file) => plaintiffApi.uploadDocument(id, file)}
             uploadDisabledReason={closed ? 'This case is closed' : null}
             description={

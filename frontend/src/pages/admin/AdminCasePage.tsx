@@ -32,18 +32,19 @@ import {
 } from '../../components/ui';
 import { CATEGORY_LABELS, REGION_LABELS, formatDate } from '../../lib/format';
 import { useReassignCase } from './useAssign';
+import { usePagedList } from '../../lib/usePagedList';
+import { ShowOlder } from '../../components/ShowOlder';
 
 function NotesTab({ caseId }: { caseId: number }) {
   const [firmId, setFirmId] = useState<string | null>(null);
-  const all = useQuery({
-    queryKey: ['admin', 'case', caseId, 'notes'],
-    queryFn: () => adminApi.listNotes(caseId),
-  });
-  if (all.isPending) return <Loading />;
-  if (all.isError) return <LoadError error={all.error} />;
-
-  const authors = new Map(all.data.items.map((n) => [n.author_firm.id, n.author_firm.name]));
-  const notes = all.data.items.filter((n) => !firmId || String(n.author_firm.id) === firmId);
+  const firms = useFirms();
+  // Filtered on the server, so older notes from the chosen firm are found too.
+  const list = usePagedList(['admin', 'case', caseId, 'notes', firmId], (page) =>
+    adminApi.listNotes(caseId, firmId ? Number(firmId) : null, page),
+  );
+  if (list.isPending) return <Loading />;
+  if (list.isError) return <LoadError error={list.error} />;
+  const notes = list.items;
 
   return (
     <Section
@@ -57,12 +58,12 @@ function NotesTab({ caseId }: { caseId: number }) {
       bg={PRIVATE_BG}
       borderColor={PRIVATE_BORDER}
       actions={
-        authors.size > 1 && (
+        (firmId || notes.length > 0) && (
           <Select
             aria-label="Filter by firm"
             placeholder="All firms"
             clearable
-            data={[...authors].map(([id, name]) => ({ value: String(id), label: name }))}
+            data={(firms.data ?? []).map((f) => ({ value: String(f.id), label: f.name }))}
             value={firmId}
             onChange={setFirmId}
             w={200}
@@ -97,6 +98,7 @@ function NotesTab({ caseId }: { caseId: number }) {
               }
             />
           ))}
+          <ShowOlder list={list} noun="notes" />
         </Stack>
       )}
     </Section>
@@ -108,16 +110,20 @@ export function AdminCasePage() {
   const [reassignOpen, setReassignOpen] = useState(false);
   const firms = useFirms();
   const kase = useQuery({ queryKey: ['admin', 'case', id], queryFn: () => adminApi.getCase(id) });
-  const updates = useQuery({
-    queryKey: ['admin', 'case', id, 'updates'],
-    queryFn: () => adminApi.listUpdates(id),
-    enabled: kase.isSuccess,
-  });
-  const history = useQuery({
-    queryKey: ['admin', 'case', id, 'history'],
-    queryFn: () => adminApi.caseHistory(id),
-    enabled: kase.isSuccess,
-  });
+  const updates = usePagedList(
+    ['admin', 'case', id, 'updates'],
+    (page) => adminApi.listUpdates(id, page),
+    {
+      enabled: kase.isSuccess,
+    },
+  );
+  const history = usePagedList(
+    ['admin', 'case', id, 'history'],
+    (page) => adminApi.caseHistory(id, page),
+    {
+      enabled: kase.isSuccess,
+    },
+  );
   const reassign = useReassignCase(() => setReassignOpen(false));
 
   if (kase.isPending) return <Loading />;
@@ -160,12 +166,15 @@ export function AdminCasePage() {
                     <Loading />
                   ) : updates.isError ? (
                     <LoadError error={updates.error} />
-                  ) : updates.data.items.length === 0 ? (
+                  ) : updates.items.length === 0 ? (
                     <Text size="sm" c="dimmed">
                       No updates yet.
                     </Text>
                   ) : (
-                    <UpdatesTimeline updates={updates.data.items} />
+                    <>
+                      <UpdatesTimeline updates={updates.items} />
+                      <ShowOlder list={updates} noun="updates" />
+                    </>
                   )}
                 </Section>
                 <Section title="Lead">
@@ -189,7 +198,7 @@ export function AdminCasePage() {
               <DocumentsPanel
                 viewer="admin"
                 queryKey={['admin', 'case', id, 'documents']}
-                fetch={() => adminApi.listCaseDocuments(id)}
+                fetch={(page) => adminApi.listCaseDocuments(id, page)}
                 description="Documents travel with the case on reassignment."
               />
             </Tabs.Panel>
@@ -200,7 +209,10 @@ export function AdminCasePage() {
                 ) : history.isError ? (
                   <LoadError error={history.error} />
                 ) : (
-                  <AuditTimeline events={history.data.items} firmNames={firmNameMap(firms.data)} />
+                  <>
+                    <AuditTimeline events={history.items} firmNames={firmNameMap(firms.data)} />
+                    <ShowOlder list={history} noun="events" />
+                  </>
                 )}
               </Section>
             </Tabs.Panel>

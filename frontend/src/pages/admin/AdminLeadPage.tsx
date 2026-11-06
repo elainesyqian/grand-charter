@@ -24,17 +24,21 @@ import {
 } from '../../components/ui';
 import { CATEGORY_LABELS, REGION_LABELS, formatDateTime, leadNumber } from '../../lib/format';
 import { useAssignLead } from './useAssign';
+import { usePagedList } from '../../lib/usePagedList';
+import { ShowOlder } from '../../components/ShowOlder';
 
 export function AdminLeadPage() {
   const id = Number(useParams().id);
   const [assignOpen, setAssignOpen] = useState(false);
   const firms = useFirms();
   const lead = useQuery({ queryKey: ['admin', 'lead', id], queryFn: () => adminApi.getLead(id) });
-  const history = useQuery({
-    queryKey: ['admin', 'lead', id, 'history'],
-    queryFn: () => adminApi.leadHistory(id),
-    enabled: lead.isSuccess,
-  });
+  const history = usePagedList(
+    ['admin', 'lead', id, 'history'],
+    (page) => adminApi.leadHistory(id, page),
+    {
+      enabled: lead.isSuccess,
+    },
+  );
   const assign = useAssignLead(() => setAssignOpen(false));
 
   if (lead.isPending) return <Loading />;
@@ -102,7 +106,10 @@ export function AdminLeadPage() {
               ) : history.isError ? (
                 <LoadError error={history.error} />
               ) : (
-                <AuditTimeline events={history.data.items} firmNames={firmNameMap(firms.data)} />
+                <>
+                  <AuditTimeline events={history.items} firmNames={firmNameMap(firms.data)} />
+                  <ShowOlder list={history} noun="events" />
+                </>
               )}
             </Section>
           </Stack>
@@ -158,7 +165,7 @@ export function AdminLeadPage() {
             <DocumentsPanel
               viewer="admin"
               queryKey={['admin', 'lead', id, 'documents']}
-              fetch={() => adminApi.listLeadDocuments(id)}
+              fetch={(page) => adminApi.listLeadDocuments(id, page)}
               description="Shared between the plaintiff and the firm."
             />
           </Stack>
