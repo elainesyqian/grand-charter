@@ -35,14 +35,14 @@ def test_plaintiff_responses_never_include_notes_or_internal_data(db):
         client.get(f"/api/plaintiff/leads/{lead.id}/documents").json(),
     ]
     text = json.dumps(payloads)
-    for secret in ("Liability looks clear", "Records request sent", "Picked up from Alder"):
+    for secret in ("Liability looks clear", "Records request sent", "Picked up from Alley"):
         assert secret not in text
     for internal in ('"status": "assigned"', "declines", "audit", "author_firm"):
         assert internal not in text
 
     # But plaintiff does see the progress timeline.
     updates = payloads[2]["items"]
-    assert any(u["message"] == "Brightwater Legal has taken over your case." for u in updates)
+    assert any(u["message"] == "Hayes & Teale LLP has taken over your case." for u in updates)
 
 
 def test_plaintiff_blocked_from_firm_and_admin_routes():

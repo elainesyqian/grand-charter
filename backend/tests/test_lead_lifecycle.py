@@ -21,7 +21,7 @@ def test_accept_creates_exactly_one_case(db):
     view = login("plaintiff1@demo").get(f"/api/plaintiff/leads/{lead.id}").json()
     assert view["display_status"] == "accepted"
     assert view["case_status"] == "open"
-    assert view["firm"]["name"].startswith("Alder")
+    assert view["firm"]["name"].startswith("Alley")
 
 
 def test_decline_requires_reason_and_removes_access(db):
@@ -37,7 +37,7 @@ def test_decline_requires_reason_and_removes_access(db):
     assert admin["status"] == "declined"
     assert admin["firm"] is None
     assert admin["declines"][0]["reason"] == "Conflict"
-    assert admin["declines"][0]["firm"]["name"].startswith("Alder")
+    assert admin["declines"][0]["firm"]["name"].startswith("Alley")
 
     # Plaintiff isn't told about the decline.
     view = login("plaintiff1@demo").get(f"/api/plaintiff/leads/{lead.id}").json()
@@ -54,7 +54,7 @@ def test_decline_after_accept_conflicts(db):
 
 def test_admin_assigns_unassigned_and_declined_leads(db):
     admin = login("admin@demo")
-    firm_c = firm_id(db, "Cedar")
+    firm_c = firm_id(db, "Chetham")
     unassigned = lead_by_description(db, "misdemeanor")
     declined = lead_by_description(db, "custody")
 
@@ -71,7 +71,7 @@ def test_admin_assigns_unassigned_and_declined_leads(db):
 def test_admin_reassigns_pending_lead_and_old_firm_loses_access(db):
     lead = lead_by_description(db, "Let go two weeks")  # pending at Firm A
     res = login("admin@demo").post(
-        f"/api/admin/leads/{lead.id}/assign", json={"firm_id": firm_id(db, "Cedar")}
+        f"/api/admin/leads/{lead.id}/assign", json={"firm_id": firm_id(db, "Chetham")}
     )
     assert res.status_code == 200
     assert login("attorney.a@demo").get(f"/api/firm/leads/{lead.id}").status_code == 404
@@ -82,14 +82,14 @@ def test_admin_assign_rules(db):
     admin = login("admin@demo")
     accepted = lead_by_description(db, "wet floor")
     pending = lead_by_description(db, "Let go two weeks")
-    firm_b = firm_id(db, "Brightwater")
+    firm_b = firm_id(db, "Hayes & Teale")
 
     # Accepted leads move via case reassignment, so lead/case firms stay in sync.
     assert admin.post(f"/api/admin/leads/{accepted.id}/assign", json={"firm_id": firm_b}).status_code == 409
     # Same firm is a no-op conflict.
     assert (
         admin.post(
-            f"/api/admin/leads/{pending.id}/assign", json={"firm_id": firm_id(db, "Alder")}
+            f"/api/admin/leads/{pending.id}/assign", json={"firm_id": firm_id(db, "Alley")}
         ).status_code
         == 409
     )
@@ -102,7 +102,7 @@ def test_admin_can_assign_back_to_firm_that_declined(db):
     lead = lead_by_description(db, "custody")  # declined by Firm B
     res = login("admin@demo").post(
         f"/api/admin/leads/{lead.id}/assign",
-        json={"firm_id": firm_id(db, "Brightwater"), "reason": "Capacity freed"},
+        json={"firm_id": firm_id(db, "Hayes & Teale"), "reason": "Capacity freed"},
     )
     assert res.status_code == 200
     assert len(res.json()["declines"]) == 1  # earlier decline stays visible
@@ -111,7 +111,7 @@ def test_admin_can_assign_back_to_firm_that_declined(db):
 def test_admin_search_includes_latest_decline(db):
     items = login("admin@demo").get("/api/admin/leads", params={"status": "declined"}).json()["items"]
     declined = next(i for i in items if i["id"] == lead_by_description(db, "custody").id)
-    assert declined["latest_decline"]["firm"]["name"].startswith("Brightwater")
+    assert declined["latest_decline"]["firm"]["name"].startswith("Hayes & Teale")
     assert declined["latest_decline"]["reason"].startswith("At capacity")
     pending = login("admin@demo").get("/api/admin/leads", params={"status": "assigned"}).json()["items"]
     assert all(i["latest_decline"] is None for i in pending)

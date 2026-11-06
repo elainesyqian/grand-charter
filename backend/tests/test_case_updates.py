@@ -27,7 +27,7 @@ def test_status_change_is_recorded_and_visible_to_plaintiff(db):
     history = login("admin@demo").get(f"/api/admin/cases/{cid}/history").json()["items"]
     changed = next(e for e in history if e["action"] == "case.status_changed")
     assert changed["before"] == {"status": "open"} and changed["after"] == {"status": "in_progress"}
-    assert changed["actor"]["name"] == "Alex Alder"
+    assert changed["actor"]["name"] == "Ana Deering"
 
 
 def test_message_only_update_is_not_audited_as_status_change(db):

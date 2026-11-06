@@ -19,3 +19,6 @@ frontend/dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Claude Code local config
+.claude/
